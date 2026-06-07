@@ -1,0 +1,22 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Data / models / embeddings (large)
+*.npy
+*.sqlite3
+qdrant_storage/
+chroma*/
+
+# Secrets
+.env
+*.key
+credentials*.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

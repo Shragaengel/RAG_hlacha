@@ -9,9 +9,11 @@ Retriever Registry — מוסיפים כאן כל retriever חדש.
 
 from .base import BaseRetriever
 from .semantic_e5_large import SemanticE5LargeRetriever
+from .semantic_e5_combined import SemanticE5CombinedRetriever
 
 REGISTRY: dict[str, type[BaseRetriever]] = {
-    "semantic_e5_large": SemanticE5LargeRetriever,
+    "semantic_e5_large":    SemanticE5LargeRetriever,
+    "semantic_e5_combined": SemanticE5CombinedRetriever,
 }
 
 

@@ -21,13 +21,17 @@ TEXT_FILE = DATA_DIR / "kitzur_shulchan_aruch.csv"
 # יחידות מפורסרות ברמת סעיף (פלט step_01)
 SEIFS_FILE = DATA_DIR / "seifs.json"
 
+# סעיפים + סיכום מודרני (text + modern_summary)
+SEIFS_WITH_SUMMARY = DATA_DIR / "seifs_with_summary.json"
+
 # ─── קובץ השאלות (להערכה) ────────────────────────────────────────────────────
 # Excel/CSV עם עמודות: שאלה, תשובה, מקור (סימן+סעיף).
 QUESTIONS_FILE = DATA_DIR / "questions.xlsx"
 
 # ─── Embeddings ───────────────────────────────────────────────────────────────
-EMBED_MODEL         = "intfloat/multilingual-e5-large"   # 1024-dim, רב-לשוני
-EMBEDDINGS_E5_LARGE = DATA_DIR / "seifs_e5_large.npy"    # מטריצה מנורמלת, שורה לכל סעיף
+EMBED_MODEL            = "intfloat/multilingual-e5-large"      # 1024-dim, רב-לשוני
+EMBEDDINGS_E5_LARGE    = DATA_DIR / "seifs_e5_large.npy"       # קידוד טקסט מקורי בלבד
+EMBEDDINGS_E5_COMBINED = DATA_DIR / "seifs_combined_e5_large.npy"  # קידוד סיכום + טקסט
 
 # ─── פלטים ────────────────────────────────────────────────────────────────────
 EXPERIMENTS_DIR = HERE / "experiments"

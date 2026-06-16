@@ -20,3 +20,11 @@ credentials*.json
 Thumbs.db
 .idea/
 .vscode/
+
+# Claude Code (local tooling — not for repo)
+.claude/
+
+# Temp / debug outputs
+data/_*.txt
+data/quality_report.txt
+/results_*.csv

@@ -1,0 +1,20 @@
+# ליבה
+numpy
+pandas
+openpyxl
+python-dotenv
+
+# embeddings סמנטיים
+sentence-transformers
+
+# הערכה
+nltk
+
+# שליפה לקסיקלית (אופציונלי)
+rank-bm25
+scikit-learn
+
+# LLM להערכת תשובות (אופציונלי)
+openai
+
+# vector store — יתווסף לאחר החלטה (qdrant-client / chromadb)

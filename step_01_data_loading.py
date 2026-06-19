@@ -31,6 +31,11 @@ def remove_niqqud(text: str) -> str:
     return re.sub(r"[֑-ׇ]", "", text)
 
 
+def remove_html_tags(text: str) -> str:
+    """מסיר תגיות HTML (<br>, <small>, <b> וכו') שמופיעות בייצוא Sefaria."""
+    return re.sub(r"<[^>]+>", " ", text)
+
+
 def normalize_whitespace(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
@@ -51,18 +56,24 @@ def split_source_citation(text: str) -> tuple[str, str]:
     לרוב ראשי תיבות קצרים (לדוגמה: 'רפ"ט', 'יו"ד סי' רפה רפו').
 
     מחזיר (body, citation). אם אין מקור מזוהה — citation ריק.
-    מפריד רק אם הקטע האחרון קצר (<= 40 תווים) כדי לא לחתוך תוכן הלכתי.
+    תומך בשני פורמטים:
+      • kitzur.net: ציטוט אחרי " - " בסוף השורה
+      • Sefaria:    ציטוט בסוגריים בסוף השורה, למשל "(יו\"ד סימן רפה)"
+    מפריד רק אם הקטע קצר (<= 40 תווים) כדי לא לחתוך תוכן הלכתי.
     """
     idx = text.rfind(" - ")
-    if idx == -1:
-        return text, ""
-    body, tail = text[:idx].strip(), text[idx + 3:].strip()
-    if len(tail) <= 40:
-        return body, tail
+    if idx != -1:
+        body, tail = text[:idx].strip(), text[idx + 3:].strip()
+        if len(tail) <= 40:
+            return body, tail
+    m = re.search(r"\s*\(([^)]{1,40})\)\s*$", text)
+    if m:
+        return text[:m.start()].strip(), m.group(1).strip()
     return text, ""
 
 
 def clean_text(text: str) -> str:
+    text = remove_html_tags(text)
     text = remove_niqqud(text)
     text = remove_editorial_brackets(text)
     text = normalize_geresh(text)

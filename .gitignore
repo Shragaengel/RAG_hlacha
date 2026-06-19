@@ -28,3 +28,12 @@ Thumbs.db
 data/_*.txt
 data/quality_report.txt
 /results_*.csv
+
+# Agent temp helpers / logs (specific prefixes — must not match __init__.py)
+_tmp*
+_extract*
+_check*
+_mine*
+data/_*
+experiments/_log_*.txt
+data/retrieved_top10.*

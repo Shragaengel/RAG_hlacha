@@ -15,8 +15,9 @@ HERE = Path(__file__).parent
 DATA_DIR = HERE / "data"
 
 # ─── קובץ טקסט המקור (קיצור שולחן ערוך) ──────────────────────────────────────
-# CSV מ-kitzur.net: כל שורה = סעיף, בפורמט "Kitzur Shulchan Arukh {סימן}:{סעיף}",טקסט
-TEXT_FILE = DATA_DIR / "kitzur_shulchan_aruch.csv"
+# CSV מלא מ-Sefaria (תורת אמת): 221 סימנים, 2765 סעיפים, מנוקד.
+# פורמט: "Kitzur Shulchan Arukh {סימן}:{סעיף}",טקסט
+TEXT_FILE = DATA_DIR / "kitzur_shulchan_aruch_full.csv"
 
 # יחידות מפורסרות ברמת סעיף (פלט step_01)
 SEIFS_FILE = DATA_DIR / "seifs.json"

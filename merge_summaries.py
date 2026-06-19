@@ -6,9 +6,12 @@ from config import SEIFS_FILE, DATA_DIR
 seifs = json.load(open(SEIFS_FILE, encoding="utf-8"))
 valid_refs = {s["ref"] for s in seifs}
 
+import glob
 ref2sum, counts, problems = {}, collections.Counter(), []
-for i in range(1, 9):
-    part = json.load(open(DATA_DIR / f"summaries_part_{i}.json", encoding="utf-8"))
+part_files = sorted(glob.glob(str(DATA_DIR / "summaries_part_*.json")))
+for pf in part_files:
+    i = pf
+    part = json.load(open(pf, encoding="utf-8"))
     for o in part:
         ref, summ = o.get("ref", ""), (o.get("modern_summary") or "").strip()
         if ref not in valid_refs:

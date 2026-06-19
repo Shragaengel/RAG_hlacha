@@ -98,12 +98,15 @@ def main() -> None:
     parser.add_argument("--test", type=int, default=None, help="הרץ רק N שאלות ראשונות")
     parser.add_argument("--topk", type=int, default=10)
     parser.add_argument("--out", type=str, default=None, help="נתיב לשמירת results.csv")
+    parser.add_argument("--questions", type=str, default=None,
+                        help="קובץ שאלות חלופי (csv/xlsx). ברירת מחדל: QUESTIONS_FILE")
     args = parser.parse_args()
 
     print(f"טוען retriever: {args.retriever}...")
     retriever = get_retriever(args.retriever)
 
-    df = pd.read_excel(QUESTIONS_FILE)
+    qfile = Path(args.questions) if args.questions else QUESTIONS_FILE
+    df = pd.read_csv(qfile, encoding="utf-8-sig") if str(qfile).endswith(".csv") else pd.read_excel(qfile)
     if args.test:
         df = df.head(args.test)
     print(f"מעריך {len(df)} שאלות...\n")

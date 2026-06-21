@@ -9,7 +9,7 @@ from pathlib import Path
 from retrievers import get_retriever
 
 query     = sys.argv[1] if len(sys.argv) > 1 else input("שאלה: ")
-retriever = sys.argv[2] if len(sys.argv) > 2 else "semantic_e5_large"
+retriever = sys.argv[2] if len(sys.argv) > 2 else "semantic_e5_combined"
 top_k     = int(sys.argv[3]) if len(sys.argv) > 3 else 10
 
 r   = get_retriever(retriever)

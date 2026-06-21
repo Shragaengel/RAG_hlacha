@@ -93,7 +93,7 @@ def print_summary(rdf: pd.DataFrame) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="הערכת שליפה — Recall@K, MRR")
-    parser.add_argument("--retriever", default="semantic_e5_large",
+    parser.add_argument("--retriever", default="semantic_e5_combined",
                         help=f"זמינים: {list_retrievers()}")
     parser.add_argument("--test", type=int, default=None, help="הרץ רק N שאלות ראשונות")
     parser.add_argument("--topk", type=int, default=10)

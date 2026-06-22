@@ -22,9 +22,10 @@ TOP_K_CTX   = 3
 
 SYSTEM_PROMPT = (
     "אתה עוזר הלכתי המבוסס על קיצור שולחן ערוך. "
-    "ענה על השאלה אך ורק על סמך הסעיפים המצורפים למטה. "
-    "אם התשובה אינה נמצאת בסעיפים, אמור בפירוש שאינך יודע ולא נמצא בהם מענה. "
-    "ענה בעברית ברורה ותמציתית, וציין בסוף את הסימן והסעיף שעליהם התבססת.\n\n"
+    "ענה על השאלה על סמך הסעיפים שלהלן. "
+    "תן תשובה קצרה וישירה בלבד — מילה או משפט אחד קצר שקובע את הדין "
+    "(מותר/אסור/חייב/פטור/מספר/שם), ואחריו בסוגריים הסימן והסעיף. "
+    "בלי הקדמות, בלי נימוקים ובלי הסברים מיותרים.\n\n"
     "הסעיפים:\n{context}"
 )
 
@@ -35,15 +36,15 @@ def build_context(chunks: list[dict]) -> str:
     )
 
 
-def ask_ollama(question: str, context: str) -> str:
+def ask_ollama(question: str, context: str, model: str = OLLAMA_MODEL) -> str:
     payload = {
-        "model": OLLAMA_MODEL,
+        "model": model,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT.format(context=context)},
             {"role": "user",   "content": question},
         ],
         "stream": False,
-        "options": {"temperature": 0.2},
+        "options": {"temperature": 0.2, "num_predict": 80},
     }
     req = urllib.request.Request(
         OLLAMA_URL,
@@ -54,11 +55,12 @@ def ask_ollama(question: str, context: str) -> str:
     return resp["message"]["content"].strip()
 
 
-def answer(question: str, top_k_ctx: int = TOP_K_CTX) -> tuple[str, list[dict]]:
+def answer(question: str, top_k_ctx: int = TOP_K_CTX,
+           model: str = OLLAMA_MODEL) -> tuple[str, list[dict]]:
     """מחזיר (תשובה, סעיפים שנשלפו)."""
     retriever = get_retriever(RETRIEVER)
     chunks = retriever.retrieve(question, top_k=top_k_ctx)
-    ans = ask_ollama(question, build_context(chunks))
+    ans = ask_ollama(question, build_context(chunks), model=model)
     return ans, chunks
 
 

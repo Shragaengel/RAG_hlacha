@@ -34,9 +34,16 @@ EMBED_MODEL            = "intfloat/multilingual-e5-large"      # 1024-dim, רב-
 EMBEDDINGS_E5_LARGE    = DATA_DIR / "seifs_e5_large.npy"       # קידוד טקסט מקורי בלבד
 EMBEDDINGS_E5_COMBINED = DATA_DIR / "seifs_combined_e5_large.npy"  # קידוד סיכום + טקסט
 
-# ─── גנרציה (Ollama מקומי — בלי GPT) ─────────────────────────────────────────
+# ─── גנרציה ───────────────────────────────────────────────────────────────────
+# backend ברירת מחדל: "ollama" (מקומי) או "openai" (GPT — דורש מפתח משלך)
+GEN_BACKEND  = "ollama"
+
+# Ollama מקומי (DictaLM 2.0, עברי, 7.3B)
 OLLAMA_URL   = "http://localhost:11434/api/chat"
-OLLAMA_MODEL = "aminadaven/dictalm2.0-instruct:q4_k_m"   # DictaLM 2.0, עברי, 7.3B
+OLLAMA_MODEL = "aminadaven/dictalm2.0-instruct:q4_k_m"
+
+# OpenAI / GPT — אופציונלי. המפתח נטען מ-OPENAI_API_KEY (סביבה או .env) ואינו נשמר בקוד.
+OPENAI_MODEL = "gpt-4o-mini"
 
 # ─── פלטים ────────────────────────────────────────────────────────────────────
 EXPERIMENTS_DIR = HERE / "experiments"

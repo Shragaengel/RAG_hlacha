@@ -26,7 +26,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from config import QUESTIONS_FILE, OLLAMA_MODEL
+from config import QUESTIONS_FILE, GEN_BACKEND
 from step_04_rag_answer import answer as rag_answer, TOP_K_CTX
 
 OUT_CSV = Path("experiments/answer_eval.csv")
@@ -65,7 +65,8 @@ def load_done(path: Path) -> set:
         return set()
 
 
-def run(df: pd.DataFrame, top_k_ctx: int, model: str, out_csv: Path) -> None:
+def run(df: pd.DataFrame, top_k_ctx: int, model, out_csv: Path,
+        ctx_mode: str = "text", backend: str = GEN_BACKEND) -> None:
     out_csv.parent.mkdir(exist_ok=True)
     done = load_done(out_csv)
     new_file = not out_csv.exists()
@@ -81,7 +82,7 @@ def run(df: pd.DataFrame, top_k_ctx: int, model: str, out_csv: Path) -> None:
     for n, (_, row) in enumerate(todo.iterrows(), 1):
         q = str(row["שאלה"]); gold = str(row["תשובה"]); src = str(row["מקור"])
         try:
-            ans, chunks = rag_answer(q, top_k_ctx, model=model)
+            ans, chunks = rag_answer(q, top_k_ctx, backend=backend, model=model, ctx_mode=ctx_mode)
         except Exception as e:
             print(f"[{row['id']}] שגיאה: {e}"); continue
         refs = [c["ref"] for c in chunks]
@@ -117,8 +118,12 @@ def main() -> None:
     ap.add_argument("--test", type=int, default=None)
     ap.add_argument("--topk", type=int, default=TOP_K_CTX)
     ap.add_argument("--questions", type=str, default=None, help="קובץ שאלות חלופי (csv/xlsx)")
-    ap.add_argument("--model", type=str, default=OLLAMA_MODEL, help="מודל Ollama")
+    ap.add_argument("--backend", choices=["ollama", "openai"], default=GEN_BACKEND,
+                    help="מנוע גנרציה: ollama (מקומי) / openai (GPT, דורש מפתח)")
+    ap.add_argument("--model", type=str, default=None, help="שם המודל (ברירת מחדל לפי backend)")
     ap.add_argument("--out", type=str, default=str(OUT_CSV), help="נתיב פלט")
+    ap.add_argument("--ctx", choices=["text", "summary", "both"], default="text",
+                    help="מקור ההקשר למודל: סעיף מקורי / סיכום מודרני / שניהם")
     ap.add_argument("--report", action="store_true")
     args = ap.parse_args()
 
@@ -133,8 +138,8 @@ def main() -> None:
         df.insert(0, "id", range(1, len(df) + 1))
     if args.test:
         df = df.head(args.test)
-    print(f"מודל: {args.model}")
-    run(df, args.topk, args.model, out_csv)
+    print(f"backend: {args.backend}  |  מודל: {args.model or '(ברירת מחדל)'}  |  הקשר: {args.ctx}")
+    run(df, args.topk, args.model, out_csv, args.ctx, args.backend)
     report(out_csv)
 
 

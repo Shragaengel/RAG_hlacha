@@ -14,7 +14,10 @@ nltk
 rank-bm25
 scikit-learn
 
-# LLM להערכת תשובות (אופציונלי)
+# LLM להערכת תשובות / backend אופציונלי
 openai
+
+# ממשק משתמש
+streamlit
 
 # vector store — יתווסף לאחר החלטה (qdrant-client / chromadb)

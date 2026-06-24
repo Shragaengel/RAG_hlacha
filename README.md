@@ -1,45 +1,48 @@
 # RAG_hlacha — מערכת RAG לקיצור שולחן ערוך
 
-מערכת Retrieval-Augmented Generation מעל **קיצור שולחן ערוך** המלא:
-שאלה בעברית טבעית → שליפת הסעיף/ים הרלוונטיים → תשובה מבוססת-מקור.
+> **Case-study הנדסי:** בניתי מערכת Retrieval-Augmented Generation מאפס מעל **קיצור שולחן ערוך** המלא (221 סימנים, 2,765 סעיפים), עם מנוע הערכה קפדני — וזיהיתי טכניקת אינדוקס ש**שיפרה שליפת-מקור-מדויקת ב-9 נקודות אחוז** (ref R@1: 0.73 → 0.82).
 
-## הדאטה
-- **קיצור שולחן ערוך המלא** מ-[Sefaria](https://www.sefaria.org/Kitzur_Shulchan_Arukh) (גרסת תורת אמת).
-- **221 סימנים, 2,765 סעיפים** — יחידת השליפה היא סעיף בודד.
-- לכל סעיף נוצר גם **סיכום מודרני** (עברית בת-זמננו עם מינוח חלופי/הפוך, למשל "מגולה"→"לא מכוסה") לגישור פערי אוצר מילים בשליפה.
+הקלט: שאלה בעברית טבעית. הפלט: הסעיף/ים ההלכתיים המדויקים שעונים עליה (ואופציונלית — ניסוח תשובה).
 
-## הצינור (Pipeline)
-| שלב | קובץ | תיאור |
+---
+
+## תוצאות עיקריות (886 שאלות, כל 221 הסימנים)
+
+| מדד | בסיס (טקסט) | **שיטה מנצחת (סיכום+טקסט)** |
 |---|---|---|
-| הורדה | `download_sefaria.py` | מושך את הספר המלא מ-Sefaria API |
-| 1 | `step_01_data_loading.py` | פרסור וניקוי → `data/seifs.json` |
-| סיכומים | `merge_summaries.py` | איחוד סיכומים מודרניים → `data/seifs_with_summary.json` |
-| 2 | `step_02_embeddings.py` / `build_combined_embeddings.py` | embeddings (e5-large) — טקסט / סיכום+טקסט |
-| 3 | `step_03_evaluate.py` | הערכת שליפה — Recall@K, MRR (רמת סימן וסעיף) |
-| 4 | `step_04_rag_answer.py` | RAG מלא: שליפה → גנרציה → תשובה |
-| 5 | `step_05_answer_eval.py` | הערכת איכות התשובה |
+| Recall@1 — רמת סימן | 0.84 | **0.90** |
+| Recall@10 — רמת סימן | 0.98 | **0.99** |
+| Recall@1 — סעיף מדויק | 0.73 | **0.82** |
+| MRR — סעיף מדויק | 0.80 | **0.88** |
 
-## שליפה (Retrieval)
-- מודל: `intfloat/multilingual-e5-large`, דמיון קוסינוס מעל NumPy `.npy`.
-- ה-retriever המוביל: **`semantic_e5_combined`** — מקודד `סיכום מודרני + טקסט`.
+## ממצאים מרכזיים
+1. **גישור אוצר-מילים עובד.** צירוף *סיכום מודרני* (עם מינוח חלופי/הפוך, למשל "מגולה"→"לא מכוסה") לכל סעיף לפני הקידוד שיפר את הדיוק ברמת הסעיף ב-**~9 נקודות** — הגישור על הפער בין שאלה בת-זמננו לטקסט הלכתי ארכאי הוא הלבר המשמעותי.
+2. **השליפה חזקה מאוד.** ב-99% מהשאלות הסימן הנכון נמצא ב-top-10; הסעיף המדויק ב-82% כבר במקום הראשון.
+3. **ממצא מדיד על גנרציה:** מודל מקומי קטן (DictaLM 7B / Qwen 3B) על CPU **אינו אמין לפסיקה** — נופל ל"מותר" גם כשהסעיף אומר מפורשות "אסור", ולא משתפר עם שום צורת הקשר (נמדד על 100 שאלות). המסקנה: השליפה היא הנכס; פסיקה אמינה דורשת מודל חזק.
 
-**תוצאות (886 שאלות הערכה, כל 221 הסימנים):**
+## הצינור
+```mermaid
+flowchart LR
+    A[Sefaria API<br/>הספר המלא] --> B[step_01<br/>פרסור וניקוי<br/>2765 סעיפים]
+    B --> C[סיכומים מודרניים<br/>גישור אוצר-מילים]
+    B --> D[step_02 / build_combined<br/>embeddings e5-large]
+    C --> D
+    D --> E[retriever<br/>semantic_e5_combined]
+    E --> F[step_04<br/>גנרציה: Ollama / GPT]
+    E --> G[app.py<br/>ממשק Streamlit]
+    E --> H[step_03/05<br/>הערכה Recall@K · MRR]
+```
 
-| מדד | טקסט בלבד | סיכום+טקסט (combined) |
-|---|---|---|
-| Recall@1 (סימן) | 0.84 | **0.90** |
-| Recall@10 (סימן) | 0.98 | **0.99** |
-| Recall@1 (סעיף מדויק) | 0.73 | **0.82** |
-| MRR (סעיף) | 0.80 | **0.88** |
+## איך זה עובד
+- **דאטה:** קיצור שו"ע מ-[Sefaria](https://www.sefaria.org/Kitzur_Shulchan_Arukh); יחידת השליפה = סעיף בודד.
+- **שליפה:** `intfloat/multilingual-e5-large`, דמיון קוסינוס מעל NumPy. ה-retriever המוביל מקודד `סיכום מודרני + טקסט`.
+- **הערכה:** 886 שאלות מתויגות (מקור סימן:סעיף) המכסות את כל הסימנים; Recall@K ו-MRR ברמת סימן וברמת סעיף.
+- **גנרציה (אופציונלי):** שני backends — `ollama` (DictaLM מקומי, אופליין) או `openai` (GPT, מפתח-משלך מ-`.env`). מתויג תמיד כ"אינו פסק".
+- **ממשק:** אפליקציית Streamlit (`app.py`), source-first, RTL.
 
-הסיכום המודרני שיפר את הדיוק ברמת הסעיף ב-~9 נקודות.
-
-## גנרציה (Generation)
-שני backends, נבחרים ב-`--backend`:
-- **`ollama`** (ברירת מחדל) — DictaLM 2.0 מקומי, לגמרי אופליין.
-- **`openai`** — GPT, **הבא-מפתח-משלך**: נטען מ-`OPENAI_API_KEY` (`.env`), לא נשמר בקוד.
-
-> הערה: על CPU ללא GPU, מודל מקומי 7B איטי (~40 שנ'/תשובה) ולא תמיד אמין בפסיקה. השליפה היא הנכס החזק של המערכת; פסיקה אמינה דורשת מודל חזק.
+## Scope
+- ✅ **הושלם:** איסוף דאטה · ניקוי · אינדוקס ברמת סעיף · סיכומים · embeddings · מנוע הערכה · אבלציות · retriever מנצח · ממשק · שני backends לגנרציה.
+- 🔭 **עתיד:** גנרציה אמינה (מודל חזק / GPU / ענן) · reranker · סט שאלות "אמת" שאינן נגזרות מהטקסט.
 
 ## התקנה והרצה
 ```bash
@@ -52,25 +55,27 @@ python step_01_data_loading.py
 python step_02_embeddings.py
 python build_combined_embeddings.py
 
-# שאלה בודדת
+# ממשק
+.venv\Scripts\streamlit run app.py --server.fileWatcherType none
+
+# שאלה מהירה / הערכה
 python step_04_rag_answer.py "האם מותר לטלטל מוקצה בשבת?"
-
-# דרך GPT (אחרי יצירת .env עם מפתח — ראה .env.example)
-python step_04_rag_answer.py "..." 3 openai
-
-# הערכה
 python step_03_evaluate.py --retriever semantic_e5_combined
 ```
+לשימוש ב-GPT: העתק `.env.example` ל-`.env` והכנס `OPENAI_API_KEY`.
 
 ## מבנה
 ```
 config.py              הגדרות (מודלים, נתיבים, backend)
-step_01..05 / build_*  הצינור
-query.py               שליפה מהירה אינטראקטיבית
-gen_presentation.py    מצגת HTML של תוצאות ההערכה
+download_sefaria.py    איסוף הדאטה מ-Sefaria
+step_01..05 / build_*  הצינור (פרסור → embeddings → הערכה → גנרציה)
 retrievers/            semantic_e5_large, semantic_e5_combined
-data/                  ספר מלא, seifs, סיכומים, שאלות, embeddings (.npy לא ב-git)
+app.py                 ממשק Streamlit
+gen_presentation.py    מצגת HTML של תוצאות ההערכה
+data/                  ספר, seifs, סיכומים, שאלות, embeddings (.npy לא ב-git)
 experiments/           תוצאות הערכה
 ```
+> `*.npy`, `.venv/`, ו-`.env` מסוננים מ-git — נבנים מחדש מהסקריפטים.
 
-הקבצים הגדולים (`*.npy`), `.venv/`, ו-`.env` מסוננים מ-git.
+---
+**סטאק:** Python · sentence-transformers (e5-large) · NumPy · Ollama (DictaLM) · OpenAI (אופציונלי) · Streamlit · pandas.

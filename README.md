@@ -1,5 +1,7 @@
 # RAG_hlacha — מערכת RAG לקיצור שולחן ערוך
 
+> **English TL;DR:** A Retrieval-Augmented Generation system over the complete *Kitzur Shulchan Arukh* (221 chapters, 2,765 paragraphs). Ask a question in natural Hebrew and get back the exact halachic source paragraph. Built from scratch with a rigorous evaluation harness (886 labeled questions, Recall@K and MRR at chapter and paragraph level). **Key finding:** prepending a modern-language summary to each paragraph before embedding bridges the vocabulary gap between modern questions and archaic text, raising exact-paragraph Recall@1 from **0.73 to 0.82**. Also measured: small local LLMs (7B on CPU) are unreliable at ruling even when retrieval is correct, so retrieval is the core asset. Stack: Python · multilingual-e5-large · NumPy · Streamlit · Ollama / OpenAI.
+
 > **Case-study הנדסי:** בניתי מערכת Retrieval-Augmented Generation מאפס מעל **קיצור שולחן ערוך** המלא (221 סימנים, 2,765 סעיפים), עם מנוע הערכה קפדני — וזיהיתי טכניקת אינדוקס ש**שיפרה שליפת-מקור-מדויקת ב-9 נקודות אחוז** (ref R@1: 0.73 → 0.82).
 
 הקלט: שאלה בעברית טבעית. הפלט: הסעיף/ים ההלכתיים המדויקים שעונים עליה (ואופציונלית — ניסוח תשובה).
